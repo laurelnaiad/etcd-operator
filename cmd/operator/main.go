@@ -59,6 +59,8 @@ var (
 	createCRD bool
 
 	clusterWide bool
+
+	logLevel int
 )
 
 func init() {
@@ -69,10 +71,12 @@ func init() {
 	flag.BoolVar(&createCRD, "create-crd", true, "The operator will not create the EtcdCluster CRD when this flag is set to false.")
 	flag.DurationVar(&gcInterval, "gc-interval", 10*time.Minute, "GC interval")
 	flag.BoolVar(&clusterWide, "cluster-wide", false, "Enable operator to watch clusters in all namespaces")
+	flag.IntVar(&logLevel, "log-level", 4, "Level at which to log via logrus (5=DebugLevel, 1=FatalLevel")
 	flag.Parse()
 }
 
 func main() {
+	logrus.SetLevel(logrus.Level(logLevel))
 	namespace = os.Getenv(constants.EnvOperatorPodNamespace)
 	if len(namespace) == 0 {
 		logrus.Fatalf("must set env (%s)", constants.EnvOperatorPodNamespace)

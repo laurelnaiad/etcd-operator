@@ -31,7 +31,7 @@ import (
 
 	"github.com/pborman/uuid"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -41,7 +41,7 @@ import (
 var (
 	reconcileInterval         = 8 * time.Second
 	podTerminationGracePeriod = int64(5)
-	errAllPodsDead = newFatalError("all etcd pods are dead.")
+	errAllPodsDead            = newFatalError("all etcd pods are dead.")
 )
 
 type clusterEventType string
@@ -403,16 +403,19 @@ func (c *Cluster) removePod(name string) error {
 }
 
 func (c *Cluster) pollPods() (running, pending []*v1.Pod, err error) {
+	c.logger.Debugf("listing pods in %v namespace", c.cluster.Namespace)
 	podList, err := c.config.KubeCli.Core().Pods(c.cluster.Namespace).List(k8sutil.ClusterListOpt(c.cluster.Name))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to list running pods: %v", err)
 	}
+	c.logger.Debugf("got %d pods", len(podList.Items))
 
 	for i := range podList.Items {
 		pod := &podList.Items[i]
 		// Avoid polling deleted pods. k8s issue where deleted pods would sometimes show the status Pending
 		// See https://github.com/coreos/etcd-operator/issues/1693
 		if pod.DeletionTimestamp != nil {
+			c.logger.Debugf("pod %v has DeletionTimestamp %v", pod.Name, pod.DeletionTimestamp)
 			continue
 		}
 		if len(pod.OwnerReferences) < 1 {
@@ -426,8 +429,10 @@ func (c *Cluster) pollPods() (running, pending []*v1.Pod, err error) {
 		}
 		switch pod.Status.Phase {
 		case v1.PodRunning:
+			c.logger.Debugf("pod %v is running", pod.Name)
 			running = append(running, pod)
 		case v1.PodPending:
+			c.logger.Debugf("pod %v is pending", pod.Name)
 			pending = append(pending, pod)
 		}
 	}
