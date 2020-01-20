@@ -434,6 +434,8 @@ func (c *Cluster) pollPods() (running, pending []*v1.Pod, err error) {
 		case v1.PodPending:
 			c.logger.Debugf("pod %v is pending", pod.Name)
 			pending = append(pending, pod)
+		default:
+			c.logger.Warnf("pod %v is in %v phase, which is unexpected", pod.Name, pod.Status.Phase)
 		}
 	}
 
