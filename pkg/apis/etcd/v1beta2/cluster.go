@@ -65,10 +65,10 @@ func (c *EtcdCluster) AsOwner() metav1.OwnerReference {
 }
 
 type ProbeConfig struct {
-	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty"`
-	TimeoutSeconds      int `json:"timeoutSeconds,omitempty"`
-	PeriodSeconds       int `json:"periodSeconds,omitempty"`
-	FailureThreshold    int `json:"failureThreshold,omitempty"`
+	InitialDelaySeconds int32 `json:"initialDelaySeconds,omitempty"`
+	TimeoutSeconds      int32 `json:"timeoutSeconds,omitempty"`
+	PeriodSeconds       int32 `json:"periodSeconds,omitempty"`
+	FailureThreshold    int32 `json:"failureThreshold,omitempty"`
 }
 
 type EtcdConfig struct {
