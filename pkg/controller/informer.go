@@ -56,8 +56,10 @@ func (c *Controller) Start() error {
 func (c *Controller) run() {
 	var ns string
 	if c.Config.ClusterWide {
+		c.logger.Debugf("cluster-wide enabled")
 		ns = metav1.NamespaceAll
 	} else {
+		c.logger.Debugf("cluster-wide disabled; namespace: %v", c.Config.Namespace)
 		ns = c.Config.Namespace
 	}
 
